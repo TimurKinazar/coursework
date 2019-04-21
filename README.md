@@ -1,24 +1,17 @@
-# PyTorch_Speaker_Verification
+Курсовая работа на тему: "Выявление свойств голоса с использованием рекурентных нейронных сетей"
+Московский государственный университет имени М.В.Ломоносова
+Выполнил студент 3-го курса механико-математического факультета кафедры  "Математических интеллектуальных систем" Киназаров Темирбек Галымжанович.
+Научные руководители Часовских Анатолий Александрович, Ронжин Дмитрий Владимирович.
 
-PyTorch implementation of speech embedding net and loss described here: https://arxiv.org/pdf/1710.10467.pdf.
 
-Also contains code to create embeddings compatible as input for the speaker diarization model found at https://github.com/google/uis-rnn
-
-![training loss](https://github.com/HarryVolek/PyTorch_Speaker_Verification/blob/master/Results/Loss.png)
-
-The TIMIT speech corpus was used to train the model, found here: https://catalog.ldc.upenn.edu/LDC93S1,
-or here, https://github.com/philipperemy/timit
-
-# Dependencies
+# Требования
 
 * PyTorch 0.4.1
 * python 3.5+
 * numpy 1.15.4
 * librosa 0.6.1
 
-The python WebRTC VAD found at https://github.com/wiseman/py-webrtcvad is required to create run dvector_create.py, but not to train the neural network.
-
-# Preprocessing
+# Предобработка данных
 
 Change the following config.yaml key to a regex containing all .WAV files in your downloaded TIMIT dataset. The TIMIT .WAV files must be converted to the standard format (RIFF) for the dvector_create.py script, but not for training the neural network.
 ```yaml
@@ -51,14 +44,25 @@ checkpoint_dir: './speech_id_checkpoint'
 ```
 Only TI-SV is implemented.
 
-# Performance
+# Получение D-вектора на другом датасете
 
-```
-EER across 10 epochs: 0.0377
-```
+После тренировки на полученный файл .model, который находится в speech_id_checkpoint, нужно прописать соответствующий путь в config.yaml. Далее запускаете dvector_create.py для создания numpy файлов train_sequence.npy, train_cluster_ids.npy, test_sequence.npy и test_cluster_ids.npy. 
+Это уже готовые индивидуальные вектора с разметкой прнадлежности каждому диктору, которые можно будет использовать для обучения моделей сложнее.
+Замечание: датасет должен быть подготовлен, т.е. должен содержать базу аудио для каждого спикера в отдельной папке. Деление подробнее в каждой папке не требуется.
 
-# D vector embedding creation
+В данной курсововой был использован датасет, как "чистый" датасет https://datashare.is.ed.ac.uk/handle/10283/1942
+Также татасет дикторов на русском языке: http://www.repository.voxforge1.org/downloads/Russian/Trunk/Audio/Original/16kHz_16bit/
 
-After training and testing the model, run dvector_create.py to create the numpy files train_sequence.npy, train_cluster_ids.npy, test_sequence.npy, and test_cluster_ids.npy. 
+# Проверка корректной классификации
+Можно воспользоваться Checkingdvectors.ipynb. Для нее доп. требование:  библиотека sklearn;
 
-These files can be loaded and used to train the uis-rnn model found at https://github.com/google/uis-rnn
+Результаты:
+1. «Чистый» датасет англ.:
+  29 дикторов по 350 — 400 фраз в большинстве одинакового содержания
+  79% правильных ответов на тестовой выборке
+2. Непрофессиональный датасет рус.:
+  10 дикторов около 200 разнородных фраз на каждого
+  80% - 85% правльных ответов на тестовой выборке(есть зависимость от тестовой выборки)
+3. Малый датасет рус.:
+  10 дикторов по 12 разнородных фраз
+  79% - 95% правильных (большая зависимость от тестовой выборки)
